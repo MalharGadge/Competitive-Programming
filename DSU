@@ -1,0 +1,27 @@
+
+
+// Disjoint Set Union
+
+const int N = 1e6+10;
+ll parent[N],sz[N];
+
+void make(ll v){
+   parent[v] = v;
+   sz[v]=1;
+}
+
+ll find(ll v){
+   if(parent[v]==v) return parent[v];
+   return parent[v]=find(parent[v]);
+}
+
+void Union(ll a,ll b){
+   a = find(a);b = find(b);
+   if(a!=b){
+      if(sz[a] < sz[b]){
+         swap(a,b);
+         parent[b]=a;
+         sz[a]+=sz[b];
+      }
+   }
+}
