@@ -1,0 +1,50 @@
+    
+void computeLPSArray(string& pattern,vector<int>& lps) {
+    int length = 0;
+    lps[0] = 0;
+    int i = 1;
+
+    while (i < pattern.size()) {
+        if (pattern[i] == pattern[length]) {
+            length++;
+            lps[i] = length;
+            i++;
+        } else {
+            if (length != 0) {
+                length = lps[length - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+}
+
+vector<int> KMP(string& text,string& pattern) {
+    int M = pattern.size();
+    int N = text.size();
+    vector<int> lps(M), result;
+
+    computeLPSArray(pattern, lps);
+
+    int i = 0; 
+    int j = 0; 
+    while (i < N) {
+        if (pattern[j] == text[i]) {
+            j++;
+            i++;
+        }
+
+        if (j == M) {
+            result.push_back(i - j); 
+            j = lps[j - 1];
+        } else if (i < N && pattern[j] != text[i]) {
+            if (j != 0) {
+                j = lps[j - 1];
+            } else {
+                i = i + 1;
+            }
+        }
+    }
+    return result;
+}
