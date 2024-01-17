@@ -18,5 +18,5 @@ void getWeigthedSum(){
    cout<<ans<<endl;
    // ans gives for the array a[l-1.....r-1] both inclusive
    // the sum ai * (l-i+1) 
-   // that is the weighted sum of the elements wrt length of the starting window
+   // that is the weighted sum of the elements wrt length of the start of the window [l..r]
 }
