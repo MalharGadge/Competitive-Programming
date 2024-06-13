@@ -1,0 +1,76 @@
+template<typename T>
+struct SegmentTree {
+    vector<T> tree;
+    ll n;
+    T default_value;
+    function<T(T, T)> combine;
+
+    SegmentTree(vector<T>& data, T default_val, function<T(T, T)> comb)
+        : n(data.size()), default_value(default_val), combine(comb) {
+        tree.resize(4 * n);
+        build(data, 0, 0, n - 1);
+    }
+
+    void build(vector<T>& data, ll node, ll start, ll end) {
+        if (start == end) {
+            tree[node] = data[start];
+        } else {
+            ll mid = (start + end) / 2;
+            build(data, 2 * node + 1, start, mid);
+            build(data, 2 * node + 2, mid + 1, end);
+            tree[node] = combine(tree[2 * node + 1], tree[2 * node + 2]);
+        }
+    }
+
+    void update(ll idx, T value) {
+        update(0, 0, n - 1, idx, value);
+    }
+
+    void update(ll node, ll start, ll end, ll idx, T value) {
+        if (start == end) {
+            tree[node] = value;
+        } else {
+            ll mid = (start + end) / 2;
+            if (idx <= mid) {
+                update(2 * node + 1, start, mid, idx, value);
+            } else {
+                update(2 * node + 2, mid + 1, end, idx, value);
+            }
+            tree[node] = combine(tree[2 * node + 1], tree[2 * node + 2]);
+        }
+    }
+
+    T query(ll l, ll r) {
+        return query(0, 0, n - 1, l, r);
+    }
+
+    T query(ll node, ll start, ll end, ll l, ll r) {
+        if (r < start || end < l) {
+            return default_value;
+        }
+        if (l <= start && end <= r) {
+            return tree[node];
+        }
+        ll mid = (start + end) / 2;
+        T left_result = query(2 * node + 1, start, mid, l, r);
+        T right_result = query(2 * node + 2, mid + 1, end, l, r);
+        return combine(left_result, right_result);
+    }
+};
+
+ll f(ll a, ll b){
+    return a + b;
+}
+void solve(){
+    ll n;cin >> n;
+    vector<ll> a(n);
+    rep(i, n) cin >> a[i];
+    
+    SegmentTree<ll> st(a, 0, [](ll a, ll b) { return a + b; });
+    // SegmentTree<ll> st(a, 0, f);
+
+    st.update(4, 3); //currently the update fuction is just a[idx] = value
+                     // u can change the update in the update function 
+
+    cout << st.query(0 , 4) << endl;
+}
