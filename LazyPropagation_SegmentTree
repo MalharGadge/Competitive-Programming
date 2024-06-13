@@ -1,0 +1,162 @@
+
+template<class T, class U>
+// T -> node, U->update.
+struct SegmentTree{
+    vector<T>st;
+    vector<U>lazy;
+    ll n;
+    T identity_element;
+    U identity_update;
+    SegmentTree(ll n, T identity_element, U identity_update)
+    {
+        this->n = n;
+        this->identity_element = identity_element;
+        this->identity_update = identity_update;
+        st.assign(4*n,identity_element);
+        lazy.assign(4*n, identity_update);
+    }
+    T combine(T l, T r)
+    {
+        // change this function as required.
+        T ans = max(l,r);
+        return ans;
+    }
+    void buildUtil(ll v, ll tl, ll tr, vector<T>&a)
+    {
+        if(tl == tr)
+        {
+            st[v] = a[tl];
+            return;
+        }
+        ll tm = (tl + tr)>>1;
+        buildUtil(2*v + 1, tl, tm,a);
+        buildUtil(2*v + 2,tm+1,tr,a);
+        st[v] = combine(st[2*v + 1], st[2*v + 2]);
+    }
+    // change the following 2 functions, and you're more or less done.
+    T apply(T curr, U upd, ll tl, ll tr)
+    {
+        T ans = curr - upd;
+        return ans;
+    }
+    U combineUpdate(U old_upd, U new_upd, ll tl, ll tr)
+    {
+        U ans = old_upd+new_upd;
+        return ans;
+    }  
+    void push_down(ll v, ll tl, ll tr)
+    {
+        if(lazy[v] == identity_update)return;
+        st[v] = apply(st[v], lazy[v], tl, tr);
+        if(2*v + 2 < 4*n)
+        {
+            ll tm = (tl + tr)>>1;
+            lazy[2*v + 1] = combineUpdate(lazy[2*v+1], lazy[v], tl, tm);
+            lazy[2*v + 2] = combineUpdate(lazy[2*v+2], lazy[v], tm+1,tr);            
+        }
+        lazy[v] = identity_update;
+    }
+
+    T queryUtil(ll v, ll tl, ll tr, ll l, ll r)
+    {
+        push_down(v,tl,tr);
+        if(l > r)return identity_element;
+        if(tr < l or tl > r)
+        {
+            return identity_element;
+        }
+        if(l <= tl and r >= tr)
+        {
+            return st[v];
+        }
+        ll tm = (tl + tr)>>1;
+        return combine(queryUtil(2*v+1,tl,tm,l,r), queryUtil(2*v+2,tm+1,tr,l,r));
+    }
+ 
+    void updateUtil(ll v, ll tl, ll tr, ll l, ll r, U upd)
+    {
+        push_down(v,tl,tr); 
+        if(tr < l or tl > r)return;
+        if(tl >=l and tr <=r)
+        {
+            lazy[v] = combineUpdate(lazy[v],upd,tl,tr);
+            push_down(v,tl,tr);
+        }
+        else
+        {
+            ll tm = (tl + tr)>>1;
+            updateUtil(2*v+1,tl,tm,l,r,upd);
+            updateUtil(2*v+2,tm+1,tr,l,r,upd);
+            st[v] = combine(st[2*v + 1], st[2*v+2]);
+        }
+    }
+ 
+    void build(vector<T>a)
+    {
+        buildUtil(0,0,n-1,a);
+    }
+    T query(ll l, ll r)
+    {
+        return queryUtil(0,0,n-1,l,r);
+    }
+    void update(ll l,ll r, U upd)
+    {
+        updateUtil(0,0,n-1,l,r,upd);
+    }
+};
+ 
+ 
+vector<ll> seive(ll n) {vector<bool> s(n+1, true);vector<ll> primes;s[0]=s[1]=false;
+for (int i=2;i<=n;i++) {if(s[i] && (ll)i*i<=n) {
+for (int j=i*i;j<=n;j+=i) s[j]=false;}}
+for (int p =2;p<=n;++p){if(s[p]){primes.push_back(p);}}return primes;}
+ll gcd(ll a,ll b){while(b){ll temp=b;b=a%b;a=temp;}return a;}
+ll expo(ll a, ll b, ll mod) {ll res = 1; while (b > 0)
+{if (b & 1)res = (res * a) % mod; a = (a * a) % mod; b = b >> 1;} return res;}
+ll modinv(ll a, ll b) {return expo(a, b - 2, b);}
+ll modadd(ll a, ll b, ll m) { return ( a % m + b % m) % m;}
+ll modmul(ll a, ll b, ll m) { return ( a % m * b % m) % m;}
+ll modsub(ll a, ll b, ll m) { return ((a%m - b%m)+ m) % m;}
+ll moddiv(ll a, ll b, ll m) { return modmul(a, modinv(b, m), m) % m ;}
+ 
+void solve(){
+   ll n,m;
+   cin>>n>>m;
+   vector<ll> h(n),r(m);
+   rep(i,n) cin>>h[i];
+   rep(i,m) cin>>r[i];
+   
+
+   SegmentTree<ll,ll> S(n,-inf,0);
+   S.build(h);
+   
+   rep(i,m){
+        debug(S.st)
+        ll left = 0, right = n;
+        ll ans = -1;
+
+        while(right - left > 1){
+            ll m = left + (right - left)/2;
+
+            if(S.query(0,m) >= r[i]){
+                right = m;
+                ans = m;
+            }
+            else{
+                left = m;
+            }
+        }
+
+        if(ans == -1){
+            cout<<0<<' ';
+        }
+        else{
+            S.update(ans,ans,r[i]);
+            cout<<ans+1<<' ';
+        }
+   }
+
+   cout<<endl;
+ 
+}
+ 
