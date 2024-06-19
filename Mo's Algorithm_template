@@ -1,0 +1,139 @@
+#include <bits/stdc++.h>
+using namespace std;
+typedef long double lld;
+typedef long long ll;
+#define fr(a, b, i) for (int i = a; i < b; i++)
+#define rfr(a, b, i) for (int i = a; i >= b; i--)
+#define rep(i, n) fr(0, n, i)
+#define ff first
+#define ss second
+#define pb push_back
+#define endl '\n'
+#define inf LLONG_MAX
+#define all(c) (c).begin(), (c).end()
+const ll mod = 1000000007;
+
+template <typename T>
+void chmin(T &f, T s) { f = min(f, s); }
+template <typename T>
+void chmax(T &f, T s) { f = max(f, s); }
+ll expo(ll a, ll b, ll mod) { ll res = 1; while (b > 0) { if (b & 1) res = (res * a) % mod; a = (a * a) % mod; b = b >> 1; } return res; }
+ll modinv(ll a, ll b) { return expo(a, b - 2, b); }
+ll modadd(ll a, ll b, ll m) { return (a % m + b % m) % m; }
+ll modmul(ll a, ll b, ll m) { return (a % m * b % m) % m; }
+ll modsub(ll a, ll b, ll m) { return ((a % m - b % m) + m) % m; }
+ll moddiv(ll a, ll b, ll m) { return modmul(a, modinv(b, m), m) % m; }
+
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+using namespace __gnu_pbds;
+typedef tree<ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update> pbds;
+// *A.find_by_order(i)    to find the element at index i(0 indexing)
+// A.order_of_key(x)     to find no. of elements with values strictly less than x
+// *A.lower_bound(x)     Lower Bound of x = first element >= x in the set
+// *A.upper_bound(x)     Upper Bound of x = first element > x in the set
+
+#ifndef ONLINE_JUDGE
+#include "debugging.h"
+#define debug(x) cerr << #x <<" "; _print(x); cerr << endl;
+#else
+#define debug(x)
+#endif
+
+struct custom_hash {
+    static uint64_t splitmix64(uint64_t x) {
+        // http://xorshift.di.unimi.it/splitmix64.c
+        x += 0x9e3779b97f4a7c15;
+        x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
+        x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
+        return x ^ (x >> 31);
+    }
+    size_t operator()(uint64_t x) const {
+        static const uint64_t FIXED_RANDOM = chrono::steady_clock::now().time_since_epoch().count();
+        return splitmix64(x + FIXED_RANDOM);
+    }
+};
+
+void solve() {
+    ll n, q;
+    cin >> n >> q;
+    vector<ll> a(n);
+    rep(i, n) cin >> a[i];
+
+    const ll nax = sqrt(n) + 1;
+
+    vector<vector<ll>> queries(q, vector<ll>(3));
+    rep(i, q) {
+        ll l, r;
+        cin >> l >> r;
+        --l, --r;
+        queries[i] = {l, r, i};
+    }
+
+    sort(all(queries), [&](vector<ll> f, vector<ll> s) -> bool {
+        if ((f[0] / nax) == (s[0] / nax)) {
+            return f[1] < s[1];
+        } else {
+            return f[0] < s[0];
+        }
+    });
+
+    ll mol = 0, mor = 0;
+    vector<ll> ans(q);
+    ll res = 0;
+
+    unordered_map<ll, ll, custom_hash> f;
+
+    auto add = [&](ll pos) {
+        ll val = a[pos];
+        res -= f[val] * f[val] * val;
+        f[val]++;
+        res += f[val] * f[val] * val;
+    };
+
+    auto remove = [&](ll pos) {
+        ll val = a[pos];
+        res -= f[val] * f[val] * val;
+        f[val]--;
+        res += f[val] * f[val] * val;
+    };
+
+    for (auto curr : queries) {
+        ll l = curr[0], r = curr[1], idx = curr[2];
+
+        while (mor <= r) {
+            add(mor);
+            mor++;
+        }
+        while (mor > r + 1) {
+            mor--;
+            remove(mor);
+        }
+        while (mol < l) {
+            remove(mol);
+            mol++;
+        }
+        while (mol > l) {
+            mol--;
+            add(mol);
+        }
+
+        ans[idx] = res;
+    }
+
+    for (auto i : ans) cout << i << endl;
+}
+
+int main() {
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+
+#ifndef ONLINE_JUDGE
+    freopen("Error.txt", "w", stderr);
+#endif
+
+    int TC = 1;
+    while (TC--) solve();
+
+    return 0;
+}
