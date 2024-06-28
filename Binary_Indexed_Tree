@@ -1,3 +1,28 @@
+
+const ll nax = 30100;
+ll bit[nax]; // bit[i] -> denotes the sum of element in the interval that ends at i 
+            // len of interval ending at i = len(i) = lsb of i 
+// 1-based indexing is followed for the query as well as updates 
+void update(ll x, ll delta){
+    while(x<=nax){
+        bit[x] += delta;
+        x += x&(-x); // way to add the lsb of x to x 
+    }
+}    
+ll sum(ll x){ // prefix sum till x
+    ll res = 0;
+    while(x){
+        res += bit[x];
+        x -= x&(-x); // way to remove the lsb of x from x
+    }
+    return res;
+}
+ll sum(ll x, ll y){ // sum of all the elements a[x...y](1 base indx)
+    return sum(y) - sum(x-1);
+}
+
+// structure for Fenwick Tree
+
 struct FenwickTree {
     vector<ll> bit; // binary indexed tree
     ll n;
