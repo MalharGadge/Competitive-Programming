@@ -1,49 +1,54 @@
-class Node{
-    public:
-        Node* links[26];
-        bool isEnd = false;
-};
+// a to z
+struct Trie {
+   int cur;
+   vector<vector<int>> tree;
+   vector<int> isEnd;
+   
+   Trie() {
+      cur = 1;
+      tree.clear(); 
+      tree.resize(1, vector<int> (26, -1));
+      isEnd.clear();
+      isEnd.push_back(0);
+   }
 
-class Trie {
-public:
-    Node* root;
-
-    Trie() {
-        root = new Node();
-    }
-    
-    void insert(string word) {
-        Node* curr = root;
-        for(int i=0;i<word.size();i++){
-            int j = word[i]-'a';
-            if(curr->links[j] != NULL) curr = curr->links[j];
-            else{
-                Node* temp = new Node();
-                curr->links[j] = temp;
-                curr = temp;
+   void insertString(string s) {
+        int head = 0;
+        for (char c : s) {
+            int ch = c - 'a';
+            if (tree[head][ch] == -1) {
+                tree[head][ch] = cur;
+                tree.push_back(vector<int>(26, -1));
+                isEnd.push_back(0); 
+                head = cur++;
+            } else {
+                head = tree[head][ch];
             }
         }
-        curr->isEnd = true;
-    }
-    
-    bool search(string word) {
-        Node* curr = root;
-        for(int i=0;i<word.size();i++){
-            int j = word[i]-'a';
-            if(curr->links[j] == NULL) return false;
-            else curr = curr->links[j];
+        isEnd[head] = 1;
+   }
+
+    pair<int,int> maxPrefixMatch(string s) { // max prefix match
+        int res = 0, head = 0;
+        for (char c : s) {
+            int ch = c - 'a';
+            if (tree[head][ch] == -1) {
+                break;
+            }
+            res++;
+            head = tree[head][ch];
         }
-        if(curr->isEnd == true) return true;
-        else return false;
+        return {res, isEnd[head]};
     }
+
     
-    bool givenThePrefixisEntireStringPresent(string prefix) {
-        Node* curr = root;
-        for(int i=0;i<prefix.size();i++){
-            int j = prefix[i]-'a';
-            if(curr->links[j] != NULL) curr = curr->links[j];
-            else return false;
-        }
-        return true;
+    bool search(string word) { // is word present in the trie
+        auto [len, is] = maxPrefixMatch(word);
+        return (len == word.size() and is == 1);
+    }   
+    
+    bool startsWith(string prefix) { // do any string in the trie has 'prefix' as prefix
+        return maxPrefixMatch(prefix).first == prefix.size();
     }
+
 };
