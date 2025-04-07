@@ -1,0 +1,68 @@
+
+struct Median {
+    using ll = long long;
+    multiset<ll> low, high;
+    ll sumLow, sumHigh;
+
+    Median() : sumLow(0), sumHigh(0) {}
+
+    void rebalance() {
+        if (low.size() > high.size() + 1) {
+            auto it = prev(low.end());
+            ll num = *it;
+            low.erase(it);
+            sumLow -= num;
+            high.insert(num);
+            sumHigh += num;
+        } else if (high.size() > low.size()) {
+            auto it = high.begin();
+            ll num = *it;
+            high.erase(it);
+            sumHigh -= num;
+            low.insert(num);
+            sumLow += num;
+        }
+    }
+
+    void add(ll num) {
+        if (low.empty() or num <= *low.rbegin()) {
+            low.insert(num);
+            sumLow += num;
+        } else {
+            high.insert(num);
+            sumHigh += num;
+        }
+        rebalance();
+    }
+
+    bool remove(ll num) {
+        if (!low.empty() && num <= *low.rbegin()) {
+            auto it = low.find(num);
+            if (it == low.end()) return false;
+            low.erase(it);
+            sumLow -= num;
+        } else {
+            auto it = high.find(num);
+            if (it == high.end()) return false;
+            high.erase(it);
+            sumHigh -= num;
+        }
+        rebalance();
+        return true;
+    }
+
+    ll median() {
+        assert(!low.empty());
+        return *low.rbegin();
+    }
+
+    ll size() {
+        return low.size() + high.size();
+    }
+
+    void reset() {
+        low.clear();
+        high.clear();
+        sumLow = sumHigh = 0;
+    }
+};
